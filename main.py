@@ -1,5 +1,6 @@
-# -*- coding: utf-8 -*-
-import task1
+import TopFilms
+import TopFilmsByGenres
 
 if __name__ == "__main__":
-    topFilms = task1.TopFilms()
+     #top_films = TopFilms.top_films()
+     top_films_by_genres = TopFilmsByGenres.top_films_by_genres_exec()
