@@ -1,4 +1,7 @@
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, split,\
+        explode, dense_rank, floor, row_number, rank
+from pyspark.sql.window import Window
 
 spark = SparkSession.builder.appName('MyProject')\
     .getOrCreate()
