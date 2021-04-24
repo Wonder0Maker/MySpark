@@ -5,7 +5,7 @@ venv/Scripts/
 venv/share/
 venv/ _pycache_/
 venv/pyvenv.cfg
-ouputs/
+outputs/
 
 .idea/
 _pycache_/
