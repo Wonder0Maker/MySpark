@@ -9,15 +9,16 @@ title_rating_info = con.titles_info.join(con.rating_info,
 
 window = con.Window.partitionBy('genres').orderBy(con.col('averageRating').desc(), con.col('numVotes').desc())
 
-def top_films_by_genres_f(tri):
+def top_films_by_genres_f():
     """ Function for find the best films by genres"""
-    top_films_by_genres = tri.select(
-            tri.tconst, tri.primaryTitle,
-            tri.startYear, tri.genres,
-            tri.averageRating, tri.numVotes) \
-        .where((tri.numVotes >= 100000)
-               & (tri.titleType == 'movie'))\
-        .orderBy(tri.averageRating.desc(), tri.numVotes.desc()) \
+    top_films_by_genres = title_rating_info.select(
+            title_rating_info.tconst, title_rating_info.primaryTitle,
+            title_rating_info.startYear, title_rating_info.genres,
+            title_rating_info.averageRating, title_rating_info.numVotes) \
+        .where((title_rating_info.numVotes >= 100000)
+               & (title_rating_info.titleType == 'movie'))\
+        .orderBy(title_rating_info.averageRating.desc(),
+                 title_rating_info.numVotes.desc()) \
         .limit(100)
     top_films_by_genres = top_films_by_genres.withColumn('rank',con.dense_rank().over(window))
     top_films_by_genres = top_films_by_genres.select(
@@ -29,6 +30,3 @@ def top_films_by_genres_f(tri):
 
     con.write_csv(top_films_by_genres, 'TopFilmsByGenres')
 
-def top_films_by_genres_exec():
-    """ Function for execute top_films_by_genres in main"""
-    top_films_by_genres_f(title_rating_info)
