@@ -50,6 +50,6 @@ def top_films_of_60s_f(tri):
 def top_films():
     """ Function for execute top_films_of_all_times_f,
         top_films_of_last_10years_f, top_films_of_60s_f in main"""
-    #top_films_of_all_times_f(title_rating_info)
-    #top_films_of_last_10years_f(title_rating_info)
+    top_films_of_all_times_f(title_rating_info)
+    top_films_of_last_10years_f(title_rating_info)
     top_films_of_60s_f(title_rating_info)
