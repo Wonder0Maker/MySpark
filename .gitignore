@@ -1,5 +1,6 @@
 venv/
 outputs/
+dataset/
 
 .idea/
 _pycache_/
