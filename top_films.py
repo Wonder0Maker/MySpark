@@ -6,7 +6,7 @@ title_rating_info = con.titles_info.join(con.rating_info,
         .drop(con.titles_info.tconst)
 
 
-def top_films_of_all_times_f():
+def top_films_of_all_times():
     """ Function for find the best films of all times"""
     top_films_of_all_times = title_rating_info.select(
                 title_rating_info.tconst, title_rating_info.primaryTitle,
@@ -21,7 +21,7 @@ def top_films_of_all_times_f():
 
 
 
-def top_films_of_last_10years_f():
+def top_films_of_last_10years():
     """ Function for find the best films of last 10 years"""
     top_films_of_last_10years = title_rating_info.select(
                 title_rating_info.tconst, title_rating_info.primaryTitle,
@@ -37,7 +37,7 @@ def top_films_of_last_10years_f():
     con.write_csv(top_films_of_last_10years, 'TopFilmsForLast10Years')
 
 
-def top_films_of_60s_f():
+def top_films_of_60s():
     """ Function for find the best films of 60`s"""
     top_films_of_60s = title_rating_info.select(
                 title_rating_info.tconst, title_rating_info.primaryTitle,
@@ -55,6 +55,6 @@ def top_films_of_60s_f():
 def top_films():
     """ Function for execute top_films_of_all_times_f,
         top_films_of_last_10years_f, top_films_of_60s_f in main"""
-    top_films_of_all_times_f()
-    top_films_of_last_10years_f()
-    top_films_of_60s_f()
+    top_films_of_all_times()
+    top_films_of_last_10years()
+    top_films_of_60s()
