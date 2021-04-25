@@ -1,6 +1,6 @@
-import TopFilmsByGenres
+import top_films_by_genres
 
 if __name__ == "__main__":
-    TopFilmsByGenres.top_films_by_genres_f()
+    top_films_by_genres.top_films_by_genres()
 
 

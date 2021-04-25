@@ -6,6 +6,7 @@ venv/share/
 venv/ _pycache_/
 venv/pyvenv.cfg
 outputs/
+dataset/
 
 .idea/
 _pycache_/
