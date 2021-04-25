@@ -3,14 +3,14 @@ import connections as con
 title_rating_info = con.titles_info.join(con.rating_info,
                                          con.titles_info.tconst == con.rating_info.tconst.alias('tconst'), 'inner') \
     .withColumn('numVotes', con.rating_info.numVotes.cast('integer')) \
-    .withColumn('genres', con.split('genres', ",\s*").cast('array<string>')) \
+    .withColumn('genres', con.split('genres', ',\s*').cast('array<string>')) \
     .withColumn('genres', con.explode('genres')) \
-    .drop(con.titles_info.tconst) \
- \
+    .drop(con.titles_info.tconst)
+
 window = con.Window.partitionBy('genres').orderBy(con.col('averageRating').desc(), con.col('numVotes').desc())
 
 
-def top_films_by_genre():
+def top_films_by_genres():
     """ Function for find the best films by genres"""
     top_films_by_genres = title_rating_info.select(
         title_rating_info.tconst, title_rating_info.primaryTitle,
