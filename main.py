@@ -1,4 +1,4 @@
+import top_actors
 
 if __name__ == "__main__":
-    pass
-
+    top_actors.top_actors()
