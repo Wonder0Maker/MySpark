@@ -1,3 +1,6 @@
+from pyspark.sql import functions as f
+from pyspark.sql.window import Window
+
 import connections as con
 
 title_rating_info = con.titles_info.join(con.rating_info,
@@ -9,7 +12,7 @@ title_rating_info = con.titles_info.join(con.rating_info,
     .withColumn('decade', (con.floor(con.col('startYear') / 10) * 10)) \
     .drop(con.titles_info.tconst)
 
-window_genres = con.Window.partitionBy('genres') \
+window_genres = Window.partitionBy('genres') \
     .orderBy(con.col('averageRating').desc(), con.col('numVotes').desc())
 
 window_decade = con.Window.partitionBy('decade') \
