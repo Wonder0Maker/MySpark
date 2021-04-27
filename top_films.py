@@ -1,60 +1,52 @@
 import connections as con
+from pyspark.sql import functions as f
+from datetime import datetime
 
-title_rating_info = con.titles_info.join(con.rating_info,
-                                         con.titles_info.tconst == con.rating_info.tconst.alias('tconst'), 'inner') \
-    .withColumn('numVotes', con.rating_info.numVotes.cast('integer')) \
-    .drop(con.titles_info.tconst)
+titles_info = con.read_tsv('title.basics.tsv') \
+    .select('tconst', 'primaryTitle', 'startYear') \
+    .where(f.col('titleType') == 'movie')
+
+rating_info = con.read_tsv('title.ratings.tsv') \
+    .select('tconst', 'numVotes', 'averageRating') \
+    .where((f.col('numVotes') >= 100000))
+
+title_rating_info = titles_info.join(rating_info,
+                                     titles_info.tconst == rating_info.tconst, 'inner') \
+    .drop(titles_info.tconst) \
+    .orderBy(f.col('averageRating').desc(),
+             f.col('numVotes').desc())
 
 
 def top_films_of_all_times():
-    """ Function for find the best films of all times"""
-    top_films_of_all_times = title_rating_info.select(
-        title_rating_info.tconst, title_rating_info.primaryTitle,
-        title_rating_info.numVotes, title_rating_info.averageRating,
-        title_rating_info.startYear) \
-        .where((title_rating_info.numVotes >= 100000)
-               & (title_rating_info.titleType == 'movie')) \
-        .orderBy(title_rating_info.averageRating.desc(), title_rating_info.numVotes.desc()) \
-        .limit(100)
+    '''
+    Find the best films of all times
+    '''
 
-    con.write_csv(top_films_of_all_times, 'TopFilmsForAllTimes')
+    top_films_of_all_times = title_rating_info.limit(100)
+
+    return top_films_of_all_times
 
 
 def top_films_of_last_10years():
-    """ Function for find the best films of last 10 years"""
-    top_films_of_last_10years = title_rating_info.select(
-        title_rating_info.tconst, title_rating_info.primaryTitle,
-        title_rating_info.numVotes, title_rating_info.averageRating,
-        title_rating_info.startYear) \
-        .where((title_rating_info.numVotes >= 100000)
-               & (title_rating_info.titleType == 'movie')
-               & (title_rating_info.startYear >= 2001)) \
-        .orderBy(title_rating_info.averageRating.desc(),
-                 title_rating_info.numVotes.desc()) \
+    '''
+    Find the best films of last 10 years
+    '''
+    current_date = datetime.now().year
+
+    top_films_of_last_10years = title_rating_info \
+        .where(f.col('startYear') >= current_date - 10) \
         .limit(100)
 
-    con.write_csv(top_films_of_last_10years, 'TopFilmsForLast10Years')
+    return top_films_of_last_10years
 
 
 def top_films_of_60s():
-    """ Function for find the best films of 60`s"""
-    top_films_of_60s = title_rating_info.select(
-        title_rating_info.tconst, title_rating_info.primaryTitle,
-        title_rating_info.numVotes, title_rating_info.averageRating,
-        title_rating_info.startYear) \
-        .where((title_rating_info.numVotes >= 100000)
-               & (title_rating_info.titleType == 'movie')
-               & (title_rating_info.startYear.like('196%'))) \
-        .orderBy(title_rating_info.averageRating.desc(),
-                 title_rating_info.numVotes.desc()) \
+    '''
+    Find the best films of 60`s
+    '''
+
+    top_films_of_60s = title_rating_info \
+        .where(f.col('startYear').between(1960, 1969)) \
         .limit(100)
 
-    con.write_csv(top_films_of_60s, 'TopFilmsFor60s')
-
-
-def top_films():
-    """ Function for execute top_films_of_all_times_f,
-        top_films_of_last_10years_f, top_films_of_60s_f in main"""
-    top_films_of_all_times()
-    top_films_of_last_10years()
-    top_films_of_60s()
+    return top_films_of_60s
