@@ -1,43 +1,35 @@
-import connections as con
 from pyspark.sql import functions as f
-from pyspark.sql import window
+from pyspark.sql import Window
 
-titles_info = con.read_tsv('title.basics.tsv') \
-    .select('tconst', 'primaryTitle', 'startYear') \
-    .where(f.col('titleType') == 'movie')
+import connections as con
 
-rating_info = con.read_tsv('title.ratings.tsv') \
-    .select('tconst', 'numVotes', 'averageRating') \
-    .where((f.col('numVotes') >= 100000))
+titles_info = con.read_tsv('title.basics.tsv')
 
+rating_info = con.read_tsv('title.ratings.tsv')
 
-title_rating_info = con.titles_info.join(con.rating_info,
-                                         con.titles_info.tconst == con.rating_info.tconst.alias('tconst'), 'inner') \
-    .withColumn('numVotes', con.rating_info.numVotes.cast('integer')) \
-    .withColumn('genres', con.split('genres', ',\s*').cast('array<string>')) \
-    .withColumn('genres', con.explode('genres')) \
-    .drop(con.titles_info.tconst)
+window = Window.partitionBy('genre') \
+    .orderBy(f.col('averageRating').desc(),
+             f.col('numVotes').desc())
 
-window = window.partitionBy('genres').orderBy(con.col('averageRating').desc(), con.col('numVotes').desc())
+title_rating_info = titles_info.join(rating_info,
+                                     titles_info.tconst == rating_info.tconst, 'inner') \
+    .withColumn('genre', f.explode(f.split('genres', ','))) \
+    .where((f.col('titleType') == 'movie')
+           & (f.col('numVotes') >= 100000)) \
+    .orderBy(f.col('averageRating').desc(),
+             f.col('numVotes').desc()) \
+    .withColumn('rank', f.dense_rank().over(window)) \
+    .drop(titles_info.tconst)
 
 
 def top_films_by_genres():
-    """ Function for find the best films by genres"""
-    top_films_by_genres = title_rating_info.select(
-        title_rating_info.tconst, title_rating_info.primaryTitle,
-        title_rating_info.startYear, title_rating_info.genres,
-        title_rating_info.averageRating, title_rating_info.numVotes) \
-        .where((title_rating_info.numVotes >= 100000)
-               & (title_rating_info.titleType == 'movie')) \
-        .orderBy(title_rating_info.averageRating.desc(),
-                 title_rating_info.numVotes.desc()) \
-        .limit(100)
-    top_films_by_genres = top_films_by_genres.withColumn('rank', con.dense_rank().over(window))
-    top_films_by_genres = top_films_by_genres.select(
-        top_films_by_genres.tconst, top_films_by_genres.primaryTitle,
-        top_films_by_genres.startYear, top_films_by_genres.genres,
-        top_films_by_genres.averageRating, top_films_by_genres.numVotes) \
-        .where(top_films_by_genres.rank <= 10) \
-        .orderBy(top_films_by_genres.genres, top_films_by_genres.rank)
+    """
+    Find the best films by genres
+    """
 
-    con.write_csv(top_films_by_genres, 'TopFilmsByGenres')
+    top_films_by_genres = title_rating_info.select(
+        'tconst', 'primaryTitle', 'startYear',
+        'genre', 'averageRating', 'numVotes') \
+        .where(title_rating_info.rank <= 10)
+
+    return top_films_by_genres
