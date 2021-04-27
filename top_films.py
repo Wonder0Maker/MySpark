@@ -2,11 +2,11 @@ from datetime import datetime
 
 from pyspark.sql import functions as f
 
-import connections as con
+from connections import read_tsv
 
-titles_info = con.read_tsv('title.basics.tsv')
+titles_info = read_tsv('title.basics.tsv')
 
-rating_info = con.read_tsv('title.ratings.tsv')
+rating_info = read_tsv('title.ratings.tsv')
 
 title_rating_info = titles_info.join(rating_info,
                                      titles_info.tconst == rating_info.tconst, 'inner') \
@@ -19,12 +19,11 @@ title_rating_info = titles_info.join(rating_info,
 
 def top_films_of_all_times():
     """
-    Find the best films of all times"
+    Find the best films of all times
     """
     top_films_of_all_times = title_rating_info \
         .select('tconst', 'primaryTitle', 'numVotes',
-                'averageRating', 'startYear') \
-        .limit(100)
+                'averageRating', 'startYear')
 
     return top_films_of_all_times
 
@@ -38,8 +37,7 @@ def top_films_of_last_10years():
     top_films_of_last_10years = title_rating_info \
         .select('tconst', 'primaryTitle', 'numVotes',
                 'averageRating', 'startYear') \
-        .where(f.col('startYear') >= current_date - 10) \
-        .limit(100)
+        .where(f.col('startYear') >= current_date - 10)
 
     return top_films_of_last_10years
 
@@ -51,6 +49,5 @@ def top_films_of_60s():
     top_films_of_60s = title_rating_info \
         .select('tconst', 'primaryTitle', 'numVotes',
                 'averageRating', 'startYear') \
-        .where(f.col('startYear').between(1960, 1969)) \
-        .limit(100)
+        .where(f.col('startYear').between(1960, 1969))
     return top_films_of_60s

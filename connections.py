@@ -13,7 +13,7 @@ def read_tsv(file_name):
                               format='сsv',
                               header='true',
                               sep=r'\t',
-                              inferSchema='true')
+                              inferSchema='true').limit(100)
 
     return dataset
 
