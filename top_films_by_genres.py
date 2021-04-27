@@ -1,4 +1,15 @@
 import connections as con
+from pyspark.sql import functions as f
+from pyspark.sql import window
+
+titles_info = con.read_tsv('title.basics.tsv') \
+    .select('tconst', 'primaryTitle', 'startYear') \
+    .where(f.col('titleType') == 'movie')
+
+rating_info = con.read_tsv('title.ratings.tsv') \
+    .select('tconst', 'numVotes', 'averageRating') \
+    .where((f.col('numVotes') >= 100000))
+
 
 title_rating_info = con.titles_info.join(con.rating_info,
                                          con.titles_info.tconst == con.rating_info.tconst.alias('tconst'), 'inner') \
@@ -7,7 +18,7 @@ title_rating_info = con.titles_info.join(con.rating_info,
     .withColumn('genres', con.explode('genres')) \
     .drop(con.titles_info.tconst)
 
-window = con.Window.partitionBy('genres').orderBy(con.col('averageRating').desc(), con.col('numVotes').desc())
+window = window.partitionBy('genres').orderBy(con.col('averageRating').desc(), con.col('numVotes').desc())
 
 
 def top_films_by_genres():
