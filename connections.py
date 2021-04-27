@@ -13,8 +13,7 @@ def read_tsv(file_name):
                               format='сsv',
                               header='true',
                               sep=r'\t',
-                              inferSchema='true').limit(100)
-
+                              inferSchema='true')
     return dataset
 
 
@@ -25,4 +24,5 @@ def write_csv(data_frame, file_name):
     data_frame = data_frame.coalesce(1)
     data_frame.write.format('csv') \
         .option('header', True).mode('overwrite') \
-        .save('outputs\outputs{}'.format(file_name))
+        .save('outputs\outputs{}'.format(file_name)).limit(100)
+
