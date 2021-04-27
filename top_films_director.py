@@ -7,7 +7,7 @@ title_rating_info = con.titles_info.join(con.rating_info,
 
 title_crew_info = title_rating_info.join(con.crew_info,
                                          title_rating_info.tconst == con.crew_info.tconst.alias('tconst'), 'inner') \
-    .withColumn('director', con.split(con.crew_info.directors, ',\s*').cast('array<string>')) \
+    .withColumn('director', con.split(con.crew_info.directors, ',')) \
     .withColumn('director', con.explode('director')) \
     .drop(con.crew_info.tconst)
 
@@ -32,5 +32,5 @@ def director_top_film():
                & (title_crew_name.titleType == 'movie')
                & (title_crew_name.numVotes >= 100000)) \
         .orderBy(title_crew_name.primaryName, title_crew_name.rank_films)
-
-    con.write_csv(top_films_director, 'top_films_director')
+    top_films_director.show(10)
+    #con.write_csv(top_films_director, 'top_films_director')

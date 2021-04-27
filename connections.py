@@ -5,23 +5,23 @@ from pyspark.sql.window import Window
 spark = SparkSession.builder.appName('MyProject') \
     .getOrCreate()
 
-titles_clue = spark.read.csv('dataset/title.akas.tsv/data.tsv', sep=r'\t', header=True)
 
-titles_info = spark.read.csv('dataset/title.basics.tsv/data.tsv', sep=r'\t', header=True)
-
-crew_info = spark.read.csv('dataset/title.crew.tsv/data.tsv', sep=r'\t', header=True)
-
-episode_info = spark.read.csv('dataset/title.episode.tsv/data.tsv', sep=r'\t', header=True)
-
-cast_info = spark.read.csv('dataset/title.principals.tsv/data.tsv', sep=r'\t', header=True)
-
-rating_info = spark.read.csv('dataset/title.ratings.tsv/data.tsv', sep=r'\t', header=True)
-
-crew_cast_personal_info = spark.read.csv('dataset/name.basics.tsv/data.tsv', sep=r'\t', header=True)
+def read_tsv(file_name):
+    dataset = spark.read.csv(('dataset/' + file_name + '/data.tsv'), sep=r'\t', header=True)
+    return dataset
 
 
 def write_csv(data_frame, file_name):
     """ Function for write data frame into csv file"""
     data_frame.write.format('csv') \
-        .option('header', True).mode('overwrite') \
+        .option('inferSchema', True).mode('overwrite') \
         .save('outputs\outputs' + file_name)
+
+
+titles_clue = read_tsv('title.akas.tsv')
+titles_info = read_tsv('title.basics.tsv')
+crew_info = read_tsv('title.crew.tsv')
+episode_info = read_tsv('title.episode.tsv')
+cast_info = read_tsv('title.principals.tsv')
+rating_info = read_tsv('title.ratings.tsv')
+crew_cast_personal_info = read_tsv('name.basics.tsv')
