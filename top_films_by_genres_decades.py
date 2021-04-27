@@ -3,41 +3,39 @@ from pyspark.sql.window import Window
 
 import connections as con
 
-title_rating_info = con.titles_info.join(con.rating_info,
-                                         con.titles_info.tconst == con.rating_info.tconst.alias('tconst'), 'inner') \
-    .withColumn('numVotes', con.rating_info.numVotes.cast('integer')) \
-    .withColumn('startYear', con.titles_info.startYear.cast('integer')) \
-    .withColumn('genres', con.split('genres', ',\s*').cast('array<string>')) \
-    .withColumn('genres', con.explode('genres')) \
-    .withColumn('decade', (con.floor(con.col('startYear') / 10) * 10)) \
-    .drop(con.titles_info.tconst)
+titles_info = con.read_tsv('title.basics.tsv')
 
-window_genres = Window.partitionBy('genres') \
-    .orderBy(con.col('averageRating').desc(), con.col('numVotes').desc())
+rating_info = con.read_tsv('title.ratings.tsv')
 
-window_decade = con.Window.partitionBy('decade') \
-    .orderBy(con.col('decade').desc())
+window_genres = Window.partitionBy('genre') \
+    .orderBy(f.col('averageRating').desc(),
+             f.col('numVotes').desc())
 
-title_rating_info = title_rating_info \
-    .where((title_rating_info.numVotes >= 100000)
-           & (title_rating_info.titleType == 'movie')) \
-    .orderBy(title_rating_info.averageRating.desc(),
-             title_rating_info.numVotes.desc()) \
-    .limit(300) \
-    .withColumn('rank_genres', con.dense_rank().over(window_genres)) \
-    .withColumn('rank_decade', con.dense_rank().over(window_decade))
+window_decade = Window.partitionBy('decade') \
+    .orderBy(f.col('decade').desc())
+
+title_rating_info = titles_info.join(rating_info,
+                                     titles_info.tconst == rating_info.tconst, 'inner') \
+    .withColumn('genre', f.explode(f.split('genres', ','))) \
+    .withColumn('decade', (f.floor(f.col('startYear') / 10) * 10)) \
+    .where((f.col('titleType') == 'movie')
+           & (f.col('numVotes') >= 100000)) \
+    .orderBy(f.col('averageRating').desc(),
+             f.col('numVotes').desc()) \
+    .withColumn('rank_genres', f.dense_rank().over(window_genres)) \
+    .withColumn('rank_decade', f.dense_rank().over(window_decade)) \
+    .drop(titles_info.tconst)
 
 
 def top_films_by_genres_decades():
-    """ Function for find the best films by genres and by years"""
-    top_films_by_genres_decades = title_rating_info.select(
-        title_rating_info.tconst, title_rating_info.primaryTitle,
-        title_rating_info.startYear, title_rating_info.genres,
-        title_rating_info.averageRating, title_rating_info.numVotes,
-        title_rating_info.decade) \
+    """
+    Find the best films by genres and by years
+    """
+    top_films_by_genres = title_rating_info.select(
+        'tconst', 'primaryTitle', 'startYear',
+        'genre', 'averageRating', 'numVotes', 'decade') \
         .where(title_rating_info.rank_genres <= 10) \
-        .orderBy(title_rating_info.decade.desc(),
-                 title_rating_info.genres,
-                 title_rating_info.rank_genres)
+        .orderBy(f.col('decade').desc(), f.col('genre'),
+                 f.col('rank_genres'))
 
-    con.write_csv(top_films_by_genres_decades, 'top_films_by_genres_decades')
+    return top_films_by_genres
