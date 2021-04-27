@@ -1,6 +1,8 @@
-import connections as con
-from pyspark.sql import functions as f
 from datetime import datetime
+
+from pyspark.sql import functions as f
+
+import connections as con
 
 titles_info = con.read_tsv('title.basics.tsv')
 
