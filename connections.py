@@ -21,7 +21,7 @@ def write_csv(data_frame, file_name):
     """
     Write data frame into csv file
     """
-    data_frame = data_frame.coalesce(1).limit(100)
+    data_frame = data_frame.coalesce(1)
     data_frame.write.format('csv') \
         .option('header', True).mode('overwrite') \
         .save('outputs\outputs{}'.format(file_name))

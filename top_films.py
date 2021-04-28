@@ -25,7 +25,7 @@ def top_films_of_all_times():
         .select('tconst', 'primaryTitle', 'numVotes',
                 'averageRating', 'startYear')
 
-    return top_films_of_all_times
+    return top_films_of_all_times.limit(100)
 
 
 def top_films_of_last_10years():
@@ -39,7 +39,7 @@ def top_films_of_last_10years():
                 'averageRating', 'startYear') \
         .where(f.col('startYear') >= current_date - 10)
 
-    return top_films_of_last_10years
+    return top_films_of_last_10years.limit(100)
 
 
 def top_films_of_60s():
@@ -50,4 +50,4 @@ def top_films_of_60s():
         .select('tconst', 'primaryTitle', 'numVotes',
                 'averageRating', 'startYear') \
         .where(f.col('startYear').between(1960, 1969))
-    return top_films_of_60s
+    return top_films_of_60s.limit(100)
