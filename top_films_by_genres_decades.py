@@ -1,11 +1,11 @@
 from pyspark.sql import functions as f
 from pyspark.sql.window import Window
 
-import connections as con
+from connections import read_tsv
 
-titles_info = con.read_tsv('title.basics.tsv')
+titles_info = read_tsv('title.basics.tsv')
 
-rating_info = con.read_tsv('title.ratings.tsv')
+rating_info = read_tsv('title.ratings.tsv')
 
 window_genres = Window.partitionBy('genre') \
     .orderBy(f.col('averageRating').desc(),
@@ -31,11 +31,11 @@ def top_films_by_genres_decades():
     """
     Find the best films by genres and by years
     """
-    top_films_by_genres = title_rating_info.select(
+    top_films_by_genres_decades = title_rating_info.select(
         'tconst', 'primaryTitle', 'startYear',
         'genre', 'averageRating', 'numVotes', 'decade') \
         .where(title_rating_info.rank_genres <= 10) \
         .orderBy(f.col('decade').desc(), f.col('genre'),
                  f.col('rank_genres'))
 
-    return top_films_by_genres
+    return top_films_by_genres_decades
