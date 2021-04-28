@@ -43,6 +43,4 @@ def top_actors():
         .select('primaryName') \
         .orderBy(f.col('count').desc())
 
-    top_films_by_genres.show(20)
-
     return top_films_by_genres
