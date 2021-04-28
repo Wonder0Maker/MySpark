@@ -24,4 +24,3 @@ def write_csv(data_frame, file_name):
     data_frame.coalesce(1).write.format('csv') \
         .option('header', True).mode('overwrite') \
         .save('outputs\outputs{}'.format(file_name))
-
