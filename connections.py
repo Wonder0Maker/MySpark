@@ -1,28 +1,28 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, split, array_contains, \
-    explode, dense_rank, floor, rank, row_number, count
-from pyspark.sql.window import Window
 
 spark = SparkSession.builder.appName('MyProject') \
+    .master('local[*]') \
     .getOrCreate()
 
-titles_clue = spark.read.csv('dataset/title.akas.tsv/data.tsv', sep=r'\t', header=True)
 
-titles_info = spark.read.csv('dataset/title.basics.tsv/data.tsv', sep=r'\t', header=True)
+def read_tsv(file_name):
+    """
+    Read data frame from tsv file
+    """
+    dataset = spark.read.load(('dataset/{}/data.tsv'.format(file_name)),
+                              format='csv',
+                              header='true',
+                              sep=r'\t',
+                              inferSchema='true')
 
-crew_info = spark.read.csv('dataset/title.crew.tsv/data.tsv', sep=r'\t', header=True)
-
-episode_info = spark.read.csv('dataset/title.episode.tsv/data.tsv', sep=r'\t', header=True)
-
-cast_info = spark.read.csv('dataset/title.principals.tsv/data.tsv', sep=r'\t', header=True)
-
-rating_info = spark.read.csv('dataset/title.ratings.tsv/data.tsv', sep=r'\t', header=True)
-
-crew_cast_personal_info = spark.read.csv('dataset/name.basics.tsv/data.tsv', sep=r'\t', header=True)
+    return dataset
 
 
 def write_csv(data_frame, file_name):
-    """ Function for write data frame into csv file"""
+    """
+    Write data frame into csv file
+    """
+    data_frame = data_frame.coalesce(1)
     data_frame.write.format('csv') \
         .option('header', True).mode('overwrite') \
-        .save('outputs\outputs' + file_name)
+        .save('outputs\outputs{}'.format(file_name))
