@@ -17,7 +17,7 @@ def prepare_rating_info(left_df, right_df):
     """
     df = join_dataframes(left_df, right_df, 'tconst') \
         .where((f.col('titleType') == 'movie') & (f.col('numVotes') >= 100000)) \
-        .orderBy(f.col('averageRating').desc(), f.col('numVotes').desc())
+        .orderBy(f.col('averageRating').desc())
 
     return df
 
@@ -54,7 +54,7 @@ def explode_by_genres(df):
     """
     Create a ranking dataframe by dividing genres
     """
-    window_genre = Window.partitionBy('genres').orderBy(f.col('averageRating').desc(), f.col('numVotes').desc())
+    window_genre = Window.partitionBy('genres').orderBy(f.col('averageRating').desc())
     df = df.withColumn('genres', f.explode(f.split('genres', ','))) \
         .withColumn('rank_genres', f.dense_rank().over(window_genre))
     return df
@@ -75,8 +75,8 @@ def top_films_by_genres_decades(df):
     Find the best films by genres and by years
     """
     window_decade = Window.partitionBy('decade').orderBy(f.col('decade').desc())
-
-    df = df.withColumn('decade', (f.floor(f.col('startYear') / 10) * 10)) \
+    df = df.withColumn('decade', f.concat((f.floor(f.col('startYear') / 10) * 10), f.lit('-'),
+                                          (f.floor(f.col('startYear') / 10) * 10) + 10)) \
         .withColumn('rank_decade', f.dense_rank().over(window_decade))
 
     df = df.select('tconst', 'primaryTitle', 'startYear', 'genres', 'averageRating', 'numVotes', 'decade') \
