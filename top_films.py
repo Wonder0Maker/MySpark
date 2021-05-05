@@ -56,7 +56,7 @@ def explode_by_genres(df):
     """
     window_genre = Window.partitionBy('genres').orderBy(f.col('averageRating').desc())
     df = df.withColumn('genres', f.explode(f.split('genres', ','))) \
-        .withColumn('rank_genres', f.dense_rank().over(window_genre))
+        .withColumn('rank_genres', f.rank().over(window_genre))
     return df
 
 
@@ -123,7 +123,7 @@ def top_films_director(df):
     """
     Find the best films of the directors
     """
-    window_director = Window.partitionBy('directors').orderBy(f.col('averageRating').desc(), f.col('numVotes').desc())
+    window_director = Window.partitionBy('directors').orderBy(f.col('averageRating').desc())
 
     df = df.withColumn('rank_films', f.dense_rank().over(window_director)) \
         .select('primaryName', 'primaryTitle', 'startYear', 'averageRating', 'numVotes') \
