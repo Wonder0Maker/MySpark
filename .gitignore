@@ -1,10 +1,6 @@
-venv/dataset/
-venv/Include/
-venv/Lib/
-venv/Scripts/
-venv/share/
-venv/ _pycache_/
-venv/pyvenv.cfg
+venv/
+outputs/
+dataset/
 
 .idea/
 _pycache_/
