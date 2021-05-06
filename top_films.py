@@ -127,7 +127,7 @@ def top_films_director(df):
 
     df = df.withColumn('rank_films', f.row_number().over(window_director)) \
         .where(f.col('rank_films') <= 5) \
-        .orderBy(f.col('directors')) \
+        .orderBy(f.col('primaryName')) \
         .select('primaryName', 'primaryTitle', 'startYear', 'averageRating', 'numVotes')
 
     return df
