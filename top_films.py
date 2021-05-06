@@ -54,17 +54,17 @@ def explode_by_genres(df):
     """
     Create a ranking dataframe by dividing genres
     """
-    window_genre = Window.partitionBy('genres').orderBy(f.col('averageRating').desc())
-    df = df.withColumn('genres', f.explode(f.split('genres', ','))) \
-        .withColumn('rank_genres', f.row_number().over(window_genre))
-    return df
+
+    return df.withColumn('genres', f.explode(f.split('genres', ',')))
 
 
 def top_films_by_genres(df):
     """
     Find the best films by genres
     """
-    df = df.where(f.col('rank_genres') <= 10) \
+    window_genre = Window.partitionBy('genres').orderBy(f.col('averageRating').desc())
+    df = df.withColumn('rank_genres', f.row_number().over(window_genre)) \
+        .where(f.col('rank_genres') <= 10) \
         .select('tconst', 'primaryTitle', 'startYear', 'genres', 'averageRating', 'numVotes')
 
     return df
@@ -75,11 +75,14 @@ def top_films_by_genres_decades(df):
     Find the best films by genres and by years
     """
     window_decade = Window.partitionBy('decade').orderBy(f.col('decade').desc())
+    window_genre = Window.partitionBy('genres').orderBy(f.col('averageRating').desc())
     df = df.withColumn('decade', f.concat((f.floor(f.col('startYear') / 10) * 10), f.lit('-'),
                                           (f.floor(f.col('startYear') / 10) * 10) + 10)) \
-        .withColumn('rank_decade', f.row_number().over(window_decade))
+        .withColumn('rank_decade', f.row_number().over(window_decade)) \
+        .withColumn('rank_genres', f.dense_rank().over(window_genre))
 
     df = df.orderBy(f.col('decade').desc(), f.col('genres'), f.col('rank_genres')) \
+        .where(f.col('rank_genres') <= 10) \
         .select('tconst', 'primaryTitle', 'startYear', 'genres', 'averageRating', 'numVotes', 'decade')
 
     return df
@@ -127,7 +130,7 @@ def top_films_director(df):
 
     df = df.withColumn('rank_films', f.row_number().over(window_director)) \
         .where(f.col('rank_films') <= 5) \
-        .orderBy(f.col('primaryName')) \
-        .select('primaryName', 'primaryTitle', 'startYear', 'averageRating', 'numVotes')
+        .select('primaryName', 'primaryTitle', 'startYear', 'averageRating', 'numVotes') \
+        .orderBy(f.col('primaryName'))
 
     return df

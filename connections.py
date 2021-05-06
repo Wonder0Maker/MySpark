@@ -9,7 +9,7 @@ def read_tsv(file_name):
     """
     Read data frame from tsv file
     """
-    dataset = spark.read.load(('dataset/{}/data.tsv'.format(file_name)),
+    dataset = spark.read.load('dataset/{}/data.tsv'.format(file_name),
                               format='csv',
                               header='true',
                               sep=r'\t',
